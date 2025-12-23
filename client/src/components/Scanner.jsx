@@ -77,11 +77,11 @@ const Scanner = ({ onScanSuccess, onScanError }) => {
   useEffect(() => {
     return () => {
       // Cleanup on component unmount
-      if (html5QrCodeRef.current && isScanning) {
+      if (html5QrCodeRef.current) {
         html5QrCodeRef.current.stop().catch(console.error);
       }
     };
-  }, [isScanning]);
+  }, []); // Empty dependency array - cleanup should run on unmount only
 
   return (
     <div className="w-full">

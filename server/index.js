@@ -34,6 +34,7 @@ app.get('/api/lookup/:barcode', async (req, res) => {
     // Check if Google API credentials are configured
     const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY;
     const GOOGLE_CX = process.env.GOOGLE_CX;
+    const SEARCH_RESULTS_LIMIT = parseInt(process.env.SEARCH_RESULTS_LIMIT || '3', 10);
 
     if (!GOOGLE_API_KEY || !GOOGLE_CX) {
       return res.status(500).json({ 
@@ -52,7 +53,7 @@ app.get('/api/lookup/:barcode', async (req, res) => {
         key: GOOGLE_API_KEY,
         cx: GOOGLE_CX,
         q: searchQuery,
-        num: 3 // Get top 3 results
+        num: SEARCH_RESULTS_LIMIT // Get configurable number of results
       }
     });
 
