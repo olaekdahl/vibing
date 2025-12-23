@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import axios from 'axios';
+import { getDemoProduct, demoBarcodeList } from './demo/fixtures.js';
 
 // Load environment variables
 dotenv.config();
@@ -9,13 +10,31 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Demo mode configuration
+const DEMO_MODE = process.env.DEMO_MODE === 'true';
+
 // Middleware
 app.use(cors());
 app.use(express.json());
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', message: 'Server is running' });
+  res.json({ 
+    status: 'ok', 
+    message: 'Server is running',
+    demoMode: DEMO_MODE
+  });
+});
+
+// Demo status endpoint - returns demo mode state and available demo barcodes
+app.get('/api/demo/status', (req, res) => {
+  res.json({
+    demoMode: DEMO_MODE,
+    availableBarcodes: DEMO_MODE ? demoBarcodeList : [],
+    message: DEMO_MODE 
+      ? 'Demo mode is active. No real API calls will be made.' 
+      : 'Demo mode is disabled. Real Google API calls will be made.'
+  });
 });
 
 // Product lookup endpoint
@@ -31,6 +50,26 @@ app.get('/api/lookup/:barcode', async (req, res) => {
       });
     }
 
+    // ============================================
+    // DEMO MODE: Return mock data without API call
+    // ============================================
+    if (DEMO_MODE) {
+      console.log(`[DEMO MODE] Looking up barcode: ${barcode}`);
+      
+      // Simulate network delay for realistic demo (300-800ms)
+      const delay = Math.floor(Math.random() * 500) + 300;
+      await new Promise(resolve => setTimeout(resolve, delay));
+      
+      const demoResult = getDemoProduct(barcode);
+      console.log(`[DEMO MODE] Returning mock results for: ${barcode}`);
+      
+      return res.json(demoResult);
+    }
+
+    // ============================================
+    // PRODUCTION MODE: Real Google API call
+    // ============================================
+    
     // Check if Google API credentials are configured
     const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY;
     const GOOGLE_CX = process.env.GOOGLE_CX;
@@ -39,7 +78,7 @@ app.get('/api/lookup/:barcode', async (req, res) => {
     if (!GOOGLE_API_KEY || !GOOGLE_CX) {
       return res.status(500).json({ 
         error: 'Configuration error',
-        message: 'Google API credentials are not configured. Please set GOOGLE_API_KEY and GOOGLE_CX environment variables.' 
+        message: 'Google API credentials are not configured. Please set GOOGLE_API_KEY and GOOGLE_CX environment variables, or enable DEMO_MODE=true for testing.' 
       });
     }
 
@@ -111,6 +150,11 @@ app.use((req, res) => {
 // Start server
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
+  console.log(`Demo mode: ${DEMO_MODE ? 'ENABLED' : 'DISABLED'}`);
   console.log(`Health check: http://localhost:${PORT}/api/health`);
   console.log(`Lookup endpoint: http://localhost:${PORT}/api/lookup/:barcode`);
+  if (DEMO_MODE) {
+    console.log(`Demo status: http://localhost:${PORT}/api/demo/status`);
+    console.log(`Available demo barcodes: ${demoBarcodeList.join(', ')}`);
+  }
 });

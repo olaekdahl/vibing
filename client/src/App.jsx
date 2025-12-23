@@ -1,8 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import Scanner from './components/Scanner';
+import DemoScanner from './components/DemoScanner';
+import PacmanAnimation from './components/PacmanAnimation';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const DEMO_MODE = import.meta.env.VITE_DEMO_MODE === 'true';
 
 function App() {
   const [manualBarcode, setManualBarcode] = useState('');
@@ -10,6 +13,20 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [lastScannedBarcode, setLastScannedBarcode] = useState('');
+  const [serverDemoMode, setServerDemoMode] = useState(null);
+
+  // Check server demo mode status on mount
+  useEffect(() => {
+    const checkDemoStatus = async () => {
+      try {
+        const response = await axios.get(`${API_URL}/api/demo/status`);
+        setServerDemoMode(response.data.demoMode);
+      } catch (err) {
+        console.log('Could not fetch demo status:', err.message);
+      }
+    };
+    checkDemoStatus();
+  }, []);
 
   const lookupBarcode = async (barcode) => {
     if (!barcode || barcode.trim() === '') {
@@ -57,8 +74,25 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-4">
+    <>
+      <PacmanAnimation />
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-4 pt-16">
       <div className="max-w-2xl mx-auto">
+        {/* Demo Mode Banner */}
+        {(DEMO_MODE || serverDemoMode) && (
+          <div className="mb-4 p-4 bg-amber-50 border-2 border-amber-300 rounded-xl">
+            <div className="flex items-center gap-3">
+              <span className="text-2xl">🎭</span>
+              <div>
+                <p className="font-semibold text-amber-800">Demo Mode Active</p>
+                <p className="text-sm text-amber-700">
+                  Camera and Google API calls are simulated. No real external services are used.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-800 mb-2">ProductScanner</h1>
@@ -68,7 +102,11 @@ function App() {
         {/* Scanner Section */}
         <div className="bg-white rounded-xl shadow-xl p-6 mb-6">
           <h2 className="text-2xl font-semibold text-gray-800 mb-4">Barcode Scanner</h2>
-          <Scanner onScanSuccess={handleScanSuccess} onScanError={handleScanError} />
+          {DEMO_MODE ? (
+            <DemoScanner onScanSuccess={handleScanSuccess} onScanError={handleScanError} />
+          ) : (
+            <Scanner onScanSuccess={handleScanSuccess} onScanError={handleScanError} />
+          )}
         </div>
 
         {/* Manual Entry Section */}
@@ -160,6 +198,7 @@ function App() {
         )}
       </div>
     </div>
+    </>
   );
 }
 

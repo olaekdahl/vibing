@@ -9,6 +9,96 @@ A web application to scan barcodes of food and cosmetic products and look them u
 - 🔍 Google Custom Search integration
 - 📱 Mobile-responsive design
 - ✨ Clean, modern UI with Tailwind CSS
+- 🎭 **Demo Mode** - Full functionality without camera or API credentials
+
+## Demo Mode
+
+Demo mode allows you to demonstrate the application without requiring:
+- Camera access
+- Google API credentials
+- Internet connectivity (for search results)
+
+### Enabling Demo Mode
+
+**Quick Start (Recommended):**
+
+1. Copy the demo environment files:
+   ```bash
+   # Server
+   cp server/.env.demo server/.env
+   
+   # Client
+   cp client/.env.demo client/.env
+   ```
+
+2. Start the application:
+   ```bash
+   npm run dev
+   ```
+
+**Manual Configuration:**
+
+Set the following environment variables:
+
+| Location | Variable | Value | Description |
+|----------|----------|-------|-------------|
+| `server/.env` | `DEMO_MODE` | `true` | Enables mock API responses |
+| `client/.env` | `VITE_DEMO_MODE` | `true` | Enables mock scanner UI |
+
+### Demo Mode Features
+
+- **Mock Scanner**: Simulated barcode scanner with selectable products
+- **Sample Products**: 6 pre-configured products with realistic data
+- **Simulated Delays**: Network latency simulation for realistic UX
+- **Visual Indicators**: Clear "Demo Mode" badges throughout the UI
+
+### Available Demo Products
+
+| Product | Barcode |
+|---------|---------|
+| Coca-Cola Classic 330ml | `5449000000996` |
+| Nivea Creme 150ml | `4005808134915` |
+| Heinz Tomato Ketchup 397g | `0013000001090` |
+| Dove Beauty Bar | `0011111181069` |
+| Colgate Total Toothpaste | `0035000761095` |
+| Nutella Hazelnut Spread 400g | `80050965` |
+
+### Switching Between Demo and Production Mode
+
+**To enable demo mode:**
+```bash
+# Server
+echo "DEMO_MODE=true" >> server/.env
+
+# Client  
+echo "VITE_DEMO_MODE=true" >> client/.env
+```
+
+**To disable demo mode (use real camera/API):**
+```bash
+# Server - set DEMO_MODE=false and configure Google API credentials
+cp server/.env.production server/.env
+# Edit server/.env with your actual GOOGLE_API_KEY and GOOGLE_CX
+
+# Client - set VITE_DEMO_MODE=false
+cp client/.env.production client/.env
+```
+
+### Demo Mode API Endpoint
+
+Check demo status programmatically:
+```bash
+GET /api/demo/status
+
+# Response:
+{
+  "demoMode": true,
+  "availableBarcodes": ["5449000000996", "4005808134915", ...],
+  "message": "Demo mode is active. No real API calls will be made."
+}
+```
+
+---
 
 ## Tech Stack
 
@@ -168,16 +258,28 @@ vibing/
 ├── client/                 # React frontend
 │   ├── src/
 │   │   ├── components/
-│   │   │   └── Scanner.jsx # Barcode scanner component
-│   │   ├── App.jsx        # Main application component
-│   │   ├── index.css      # Global styles with Tailwind
-│   │   └── main.jsx       # Application entry point
+│   │   │   ├── Scanner.jsx     # Real barcode scanner component
+│   │   │   └── DemoScanner.jsx # Mock scanner for demo mode
+│   │   ├── demo/
+│   │   │   └── demoData.js     # Client-side demo product data
+│   │   ├── App.jsx             # Main application component
+│   │   ├── index.css           # Global styles with Tailwind
+│   │   └── main.jsx            # Application entry point
+│   ├── .env.example            # Environment template
+│   ├── .env.demo               # Demo mode preset
+│   ├── .env.production         # Production mode preset
 │   ├── package.json
 │   └── vite.config.js
 ├── server/                # Express backend
-│   ├── index.js          # Server and API endpoints
-│   ├── package.json
-│   └── .env.example
+│   ├── demo/
+│   │   ├── fixtures.js         # Mock product data
+│   │   ├── fixtures.test.js    # Fixtures unit tests
+│   │   └── api.test.js         # API integration tests
+│   ├── index.js               # Server and API endpoints
+│   ├── .env.example           # Environment template
+│   ├── .env.demo              # Demo mode preset
+│   ├── .env.production        # Production mode preset
+│   └── package.json
 ├── package.json          # Root package.json with scripts
 └── README.md
 ```
@@ -192,7 +294,21 @@ Health check endpoint.
 ```json
 {
   "status": "ok",
-  "message": "Server is running"
+  "message": "Server is running",
+  "demoMode": true
+}
+```
+
+### GET /api/demo/status
+
+Get demo mode status and available demo barcodes.
+
+**Response:**
+```json
+{
+  "demoMode": true,
+  "availableBarcodes": ["5449000000996", "4005808134915", ...],
+  "message": "Demo mode is active. No real API calls will be made."
 }
 ```
 
@@ -259,6 +375,18 @@ npm run build
 ```
 
 The built files will be in `client/dist/`.
+
+### Running Tests
+
+```bash
+# Run all server tests
+cd server
+npm test
+
+# Run specific tests
+npm run test:fixtures  # Test demo fixtures
+npm run test:api       # Test API endpoints
+```
 
 ### Deploy:
 

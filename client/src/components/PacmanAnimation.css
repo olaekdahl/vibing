@@ -1,0 +1,166 @@
+/* Pac-Man Animation - Pure CSS */
+
+.pacman-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 40px;
+  background: #1a1a2e;
+  overflow: hidden;
+  z-index: 1000;
+}
+
+/* Pac-Man Character */
+.pacman {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 30px;
+  height: 30px;
+  animation: pacman-move 8s linear infinite;
+  z-index: 10;
+}
+
+.pacman-top,
+.pacman-bottom {
+  position: absolute;
+  width: 30px;
+  height: 15px;
+  background: #ffcc00;
+  left: 0;
+}
+
+.pacman-top {
+  top: 0;
+  border-radius: 15px 15px 0 0;
+  transform-origin: bottom center;
+  animation: chomp-top 0.2s ease-in-out infinite;
+}
+
+.pacman-bottom {
+  bottom: 0;
+  border-radius: 0 0 15px 15px;
+  transform-origin: top center;
+  animation: chomp-bottom 0.2s ease-in-out infinite;
+}
+
+/* Pac-Man eye */
+.pacman-top::after {
+  content: '';
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  background: #1a1a2e;
+  border-radius: 50%;
+  top: 5px;
+  left: 15px;
+}
+
+/* Dots */
+.dots {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  left: 60px;
+  display: flex;
+  gap: 40px;
+  width: 100%;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  background: #ffcc00;
+  border-radius: 50%;
+  animation: dot-disappear 8s linear infinite;
+}
+
+/* Stagger dot disappearance based on position */
+.dot:nth-child(1) { animation-delay: 0s; }
+.dot:nth-child(2) { animation-delay: 0.5s; }
+.dot:nth-child(3) { animation-delay: 1s; }
+.dot:nth-child(4) { animation-delay: 1.5s; }
+.dot:nth-child(5) { animation-delay: 2s; }
+.dot:nth-child(6) { animation-delay: 2.5s; }
+.dot:nth-child(7) { animation-delay: 3s; }
+.dot:nth-child(8) { animation-delay: 3.5s; }
+.dot:nth-child(9) { animation-delay: 4s; }
+.dot:nth-child(10) { animation-delay: 4.5s; }
+.dot:nth-child(11) { animation-delay: 5s; }
+.dot:nth-child(12) { animation-delay: 5.5s; }
+.dot:nth-child(13) { animation-delay: 6s; }
+.dot:nth-child(14) { animation-delay: 6.5s; }
+.dot:nth-child(15) { animation-delay: 7s; }
+
+/* Animations */
+@keyframes pacman-move {
+  0% {
+    left: -40px;
+  }
+  100% {
+    left: calc(100% + 40px);
+  }
+}
+
+@keyframes chomp-top {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(-20deg);
+  }
+}
+
+@keyframes chomp-bottom {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(20deg);
+  }
+}
+
+@keyframes dot-disappear {
+  0%, 10% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  15% {
+    opacity: 0;
+    transform: scale(0);
+  }
+  95% {
+    opacity: 0;
+    transform: scale(0);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Power pellet - larger pulsing dot */
+.dot:nth-child(5),
+.dot:nth-child(10),
+.dot:nth-child(15) {
+  width: 14px;
+  height: 14px;
+  margin-top: -3px;
+  animation: 
+    dot-disappear 8s linear infinite,
+    pulse 0.4s ease-in-out infinite;
+}
+
+.dot:nth-child(5) { animation-delay: 2s, 0s; }
+.dot:nth-child(10) { animation-delay: 4.5s, 0s; }
+.dot:nth-child(15) { animation-delay: 7s, 0s; }
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+}
