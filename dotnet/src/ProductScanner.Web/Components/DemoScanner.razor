@@ -1,0 +1,151 @@
+@using ProductScanner.Web.Models
+@using ProductScanner.Web.Services
+
+<div class="demo-scanner">
+    <!-- Demo Mode Badge -->
+    <div class="demo-badge">
+        <span class="badge-icon">🎭</span>
+        <span class="badge-text">DEMO MODE - No camera required</span>
+    </div>
+
+    <!-- Product Selector -->
+    <div class="product-selector">
+        <label>Select Demo Product:</label>
+        <div class="product-grid">
+            @foreach (var product in DemoData.Products)
+            {
+                <button class="product-btn @(SelectedProduct?.Barcode == product.Barcode ? "selected" : "")"
+                        @onclick="() => SelectProduct(product)">
+                    <div class="product-name">@product.Name</div>
+                    <div class="product-barcode">@product.Barcode</div>
+                </button>
+            }
+        </div>
+    </div>
+
+    <!-- Scan Button -->
+    <div class="scan-controls">
+        @if (!IsScanning)
+        {
+            <button class="scan-btn start" @onclick="StartScanning" disabled="@(SelectedProduct == null)">
+                🔍 Simulate Scan
+            </button>
+        }
+        else
+        {
+            <button class="scan-btn stop" @onclick="StopScanning">
+                Stop Scan
+            </button>
+        }
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="quick-actions">
+        <button class="action-btn" @onclick="NextProduct" disabled="@IsScanning">
+            Next Product →
+        </button>
+        <button class="action-btn" @onclick="Reset" disabled="@IsScanning">
+            ↺ Reset
+        </button>
+    </div>
+
+    <!-- Scanning Animation -->
+    @if (IsScanning)
+    {
+        <div class="scanner-view">
+            <div class="scanner-frame">
+                <div class="scan-line" style="top: @(ScanProgress)%"></div>
+                <div class="barcode-visual">
+                    @for (int i = 0; i < 30; i++)
+                    {
+                        <div class="barcode-bar" style="width: @(Random.Shared.Next(2, 5))px"></div>
+                    }
+                </div>
+            </div>
+            <div class="scan-status">
+                <div class="scan-info">
+                    <p class="product-name">@SelectedProduct?.Name</p>
+                    <p class="barcode">@SelectedProduct?.Barcode</p>
+                </div>
+                <div class="scan-progress">
+                    <p>Scanning... @ScanProgress%</p>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: @(ScanProgress)%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Current Selection (when not scanning) -->
+    @if (!IsScanning && SelectedProduct != null)
+    {
+        <div class="current-selection">
+            <p class="label">Ready to scan:</p>
+            <p class="name">@SelectedProduct.Name</p>
+            <p class="barcode">@SelectedProduct.Barcode</p>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public EventCallback<string> OnScanComplete { get; set; }
+
+    private DemoProduct? SelectedProduct { get; set; }
+    private bool IsScanning { get; set; }
+    private int ScanProgress { get; set; }
+    private int currentIndex = 0;
+
+    protected override void OnInitialized()
+    {
+        SelectedProduct = DemoData.Products.FirstOrDefault();
+    }
+
+    private void SelectProduct(DemoProduct product)
+    {
+        SelectedProduct = product;
+        currentIndex = DemoData.Products.IndexOf(product);
+    }
+
+    private void NextProduct()
+    {
+        currentIndex = (currentIndex + 1) % DemoData.Products.Count;
+        SelectedProduct = DemoData.Products[currentIndex];
+    }
+
+    private void Reset()
+    {
+        currentIndex = 0;
+        SelectedProduct = DemoData.Products.FirstOrDefault();
+    }
+
+    private async Task StartScanning()
+    {
+        if (SelectedProduct == null) return;
+        
+        IsScanning = true;
+        ScanProgress = 0;
+
+        // Simulate scanning progress
+        for (int i = 0; i <= 100; i += 5)
+        {
+            ScanProgress = i;
+            StateHasChanged();
+            await Task.Delay(80);
+        }
+
+        IsScanning = false;
+        
+        if (SelectedProduct != null)
+        {
+            await OnScanComplete.InvokeAsync(SelectedProduct.Barcode);
+        }
+    }
+
+    private void StopScanning()
+    {
+        IsScanning = false;
+        ScanProgress = 0;
+    }
+}

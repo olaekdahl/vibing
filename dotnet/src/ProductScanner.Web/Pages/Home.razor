@@ -1,0 +1,145 @@
+﻿@page "/"
+@using ProductScanner.Web.Components
+@using ProductScanner.Web.Models
+@using ProductScanner.Web.Services
+@inject ProductApiService ApiService
+
+<PageTitle>ProductScanner</PageTitle>
+
+<PacmanAnimation />
+
+<div class="app-container">
+    <!-- Demo Mode Banner -->
+    @if (demoMode)
+    {
+        <div class="demo-banner">
+            <span class="icon">🎭</span>
+            <div>
+                <p class="title">Demo Mode Active</p>
+                <p class="subtitle">Camera and Google API calls are simulated. No real external services are used.</p>
+            </div>
+        </div>
+    }
+
+    <!-- Header -->
+    <div class="header">
+        <h1>ProductScanner</h1>
+        <p>Scan barcodes to find product information</p>
+    </div>
+
+    <!-- Scanner Section -->
+    <div class="card">
+        <h2>Barcode Scanner</h2>
+        <DemoScanner OnScanComplete="HandleScanComplete" />
+    </div>
+
+    <!-- Manual Entry Section -->
+    <div class="card">
+        <h2>Manual Entry</h2>
+        <div class="manual-entry">
+            <input type="text" @bind="manualBarcode" @bind:event="oninput" 
+                   placeholder="Enter barcode number..." 
+                   @onkeypress="HandleKeyPress" />
+            <button @onclick="LookupBarcode" disabled="@isLoading">
+                @(isLoading ? "Searching..." : "Search")
+            </button>
+        </div>
+    </div>
+
+    <!-- Loading Indicator -->
+    @if (isLoading)
+    {
+        <div class="card loading-card">
+            <div class="spinner"></div>
+            <p>Searching for product information...</p>
+        </div>
+    }
+
+    <!-- Error Display -->
+    @if (!string.IsNullOrEmpty(error) && !isLoading)
+    {
+        <div class="error-card">
+            <h3>Error</h3>
+            <p>@error</p>
+        </div>
+    }
+
+    <!-- Results -->
+    @if (results != null && !isLoading)
+    {
+        <div class="card">
+            <SearchResults Results="results" />
+        </div>
+    }
+</div>
+
+@code {
+    private string manualBarcode = string.Empty;
+    private bool isLoading = false;
+    private string? error = null;
+    private ProductLookupResponse? results = null;
+    private bool demoMode = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var status = await ApiService.GetDemoStatusAsync();
+        if (status != null)
+        {
+            demoMode = status.DemoMode;
+        }
+    }
+
+    private async Task HandleScanComplete(string barcode)
+    {
+        await LookupProduct(barcode);
+    }
+
+    private async Task LookupBarcode()
+    {
+        if (!string.IsNullOrWhiteSpace(manualBarcode))
+        {
+            await LookupProduct(manualBarcode);
+        }
+    }
+
+    private async Task HandleKeyPress(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await LookupBarcode();
+        }
+    }
+
+    private async Task LookupProduct(string barcode)
+    {
+        if (string.IsNullOrWhiteSpace(barcode))
+        {
+            error = "Please enter a valid barcode";
+            return;
+        }
+
+        isLoading = true;
+        error = null;
+        results = null;
+        StateHasChanged();
+
+        try
+        {
+            results = await ApiService.LookupProductAsync(barcode);
+            
+            if (results == null)
+            {
+                error = "Cannot connect to server. Please make sure the backend is running.";
+            }
+        }
+        catch (Exception ex)
+        {
+            error = $"An error occurred: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+}
+

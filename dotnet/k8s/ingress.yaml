@@ -1,0 +1,32 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: productscanner-ingress
+  namespace: productscanner
+  labels:
+    app.kubernetes.io/name: productscanner
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: productscanner.local
+      http:
+        paths:
+          # API routes
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: productscanner-api-service
+                port:
+                  number: 5000
+          # Web frontend (all other routes)
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: productscanner-web-service
+                port:
+                  number: 80

@@ -1,0 +1,40 @@
+@using ProductScanner.Web.Models
+
+<div class="results-container">
+    @if (Results != null && Results.Success && Results.Results.Any())
+    {
+        <div class="results-header">
+            <h2>Search Results</h2>
+            <p class="barcode">Barcode: <span>@Results.Barcode</span></p>
+        </div>
+
+        <div class="results-list">
+            @foreach (var result in Results.Results)
+            {
+                <div class="result-card">
+                    <h3>
+                        <a href="@result.Link" target="_blank" rel="noopener noreferrer">
+                            @result.Title
+                        </a>
+                    </h3>
+                    <p class="snippet">@result.Snippet</p>
+                    <a href="@result.Link" target="_blank" rel="noopener noreferrer" class="link">
+                        @result.Link
+                    </a>
+                </div>
+            }
+        </div>
+    }
+    else if (Results != null && !Results.Success)
+    {
+        <div class="no-results">
+            <h3>No Results Found</h3>
+            <p>No products found for barcode: <span>@Results.Barcode</span></p>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public ProductLookupResponse? Results { get; set; }
+}

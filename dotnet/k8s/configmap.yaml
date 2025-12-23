@@ -1,0 +1,41 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: productscanner-api-config
+  namespace: productscanner
+  labels:
+    app.kubernetes.io/name: productscanner-api
+    app.kubernetes.io/component: api
+data:
+  appsettings.json: |
+    {
+      "Logging": {
+        "LogLevel": {
+          "Default": "Information",
+          "Microsoft.AspNetCore": "Warning"
+        }
+      },
+      "AllowedHosts": "*",
+      "DemoMode": "true",
+      "Port": "5000",
+      "GoogleApi": {
+        "ApiKey": "",
+        "Cx": "",
+        "ResultsLimit": "3"
+      },
+      "Urls": "http://0.0.0.0:5000"
+    }
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: productscanner-web-config
+  namespace: productscanner
+  labels:
+    app.kubernetes.io/name: productscanner-web
+    app.kubernetes.io/component: web
+data:
+  appsettings.json: |
+    {
+      "ApiBaseAddress": "http://productscanner-api-service:5000/"
+    }

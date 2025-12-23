@@ -1,0 +1,35 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: productscanner-api-service
+  namespace: productscanner
+  labels:
+    app.kubernetes.io/name: productscanner-api
+    app.kubernetes.io/component: api
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: productscanner-api
+  ports:
+    - port: 5000
+      targetPort: 5000
+      protocol: TCP
+      name: http
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: productscanner-web-service
+  namespace: productscanner
+  labels:
+    app.kubernetes.io/name: productscanner-web
+    app.kubernetes.io/component: web
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: productscanner-web
+  ports:
+    - port: 80
+      targetPort: 80
+      protocol: TCP
+      name: http

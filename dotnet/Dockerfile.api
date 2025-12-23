@@ -1,0 +1,25 @@
+# Build stage for API
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build-api
+WORKDIR /src
+
+# Copy csproj and restore
+COPY src/ProductScanner.Api/ProductScanner.Api.csproj ./ProductScanner.Api/
+RUN dotnet restore ProductScanner.Api/ProductScanner.Api.csproj
+
+# Copy source and build
+COPY src/ProductScanner.Api/ ./ProductScanner.Api/
+WORKDIR /src/ProductScanner.Api
+RUN dotnet publish -c Release -o /app/publish
+
+# Runtime stage
+FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
+WORKDIR /app
+COPY --from=build-api /app/publish .
+
+# Set environment variables
+ENV ASPNETCORE_URLS=http://+:5000
+ENV ASPNETCORE_ENVIRONMENT=Production
+
+EXPOSE 5000
+
+ENTRYPOINT ["dotnet", "ProductScanner.Api.dll"]

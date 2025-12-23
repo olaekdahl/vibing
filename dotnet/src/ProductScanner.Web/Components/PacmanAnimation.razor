@@ -1,0 +1,121 @@
+<div class="pacman-container">
+    <div class="pacman">
+        <div class="pacman-top"></div>
+        <div class="pacman-bottom"></div>
+    </div>
+    <div class="dots">
+        @for (int i = 1; i <= 15; i++)
+        {
+            <div class="dot" style="animation-delay: @(i * 0.5)s"></div>
+        }
+    </div>
+</div>
+
+<style>
+    .pacman-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 40px;
+        background: #1a1a2e;
+        overflow: hidden;
+        z-index: 1000;
+    }
+
+    .pacman {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 30px;
+        height: 30px;
+        animation: pacman-move 8s linear infinite;
+        z-index: 10;
+    }
+
+    .pacman-top,
+    .pacman-bottom {
+        position: absolute;
+        width: 30px;
+        height: 15px;
+        background: #ffcc00;
+        left: 0;
+    }
+
+    .pacman-top {
+        top: 0;
+        border-radius: 15px 15px 0 0;
+        transform-origin: bottom center;
+        animation: chomp-top 0.2s ease-in-out infinite;
+    }
+
+    .pacman-bottom {
+        bottom: 0;
+        border-radius: 0 0 15px 15px;
+        transform-origin: top center;
+        animation: chomp-bottom 0.2s ease-in-out infinite;
+    }
+
+    .pacman-top::after {
+        content: '';
+        position: absolute;
+        width: 5px;
+        height: 5px;
+        background: #1a1a2e;
+        border-radius: 50%;
+        top: 5px;
+        left: 15px;
+    }
+
+    .dots {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        left: 60px;
+        display: flex;
+        gap: 40px;
+        width: 100%;
+    }
+
+    .dot {
+        width: 8px;
+        height: 8px;
+        background: #ffcc00;
+        border-radius: 50%;
+        animation: dot-disappear 8s linear infinite;
+    }
+
+    .dot:nth-child(5n) {
+        width: 14px;
+        height: 14px;
+        margin-top: -3px;
+        animation: dot-disappear 8s linear infinite, pulse 0.4s ease-in-out infinite;
+    }
+
+    @@keyframes pacman-move {
+        0% { left: -40px; }
+        100% { left: calc(100% + 40px); }
+    }
+
+    @@keyframes chomp-top {
+        0%, 100% { transform: rotate(0deg); }
+        50% { transform: rotate(-20deg); }
+    }
+
+    @@keyframes chomp-bottom {
+        0%, 100% { transform: rotate(0deg); }
+        50% { transform: rotate(20deg); }
+    }
+
+    @@keyframes dot-disappear {
+        0%, 10% { opacity: 1; transform: scale(1); }
+        15% { opacity: 0; transform: scale(0); }
+        95% { opacity: 0; transform: scale(0); }
+        100% { opacity: 1; transform: scale(1); }
+    }
+
+    @@keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.2); }
+    }
+</style>
